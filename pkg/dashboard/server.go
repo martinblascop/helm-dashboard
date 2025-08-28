@@ -52,7 +52,15 @@ func (s *Server) StartServer(ctx context.Context, cancel context.CancelFunc) (st
 	api := NewRouter(cancel, data, s.Debug)
 	done := s.startBackgroundServer(api, ctx)
 
-	return "http://" + s.Address, done, nil
+	// include base path in printed address if set
+	basePath := strings.TrimSpace(os.Getenv("HD_BASE_PATH"))
+	if basePath == "/" {
+		basePath = ""
+	}
+	if basePath != "" && !strings.HasPrefix(basePath, "/") {
+		basePath = "/" + basePath
+	}
+	return "http://" + s.Address + basePath + "/", done, nil
 }
 
 func (s *Server) detectClusterMode(data *objects.DataLayer) error {
@@ -115,7 +123,14 @@ func (s *Server) startBackgroundServer(routes *gin.Engine, ctx context.Context) 
 }
 
 func (s *Server) itIsUs() bool {
-	url := fmt.Sprintf("http://%s/status", s.Address)
+	basePath := strings.TrimSpace(os.Getenv("HD_BASE_PATH"))
+	if basePath == "/" {
+		basePath = ""
+	}
+	if basePath != "" && !strings.HasPrefix(basePath, "/") {
+		basePath = "/" + basePath
+	}
+	url := fmt.Sprintf("http://%s%s/status", s.Address, basePath)
 	var myClient = &http.Client{
 		Timeout: 5 * time.Second,
 	}
