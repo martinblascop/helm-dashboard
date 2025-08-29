@@ -212,10 +212,12 @@ func configureStatic(api *gin.RouterGroup) {
 	})
 
 	api.GET("/assets/*filepath", func(c *gin.Context) {
-		c.FileFromFS(path.Join("dist", c.Request.URL.Path), fs)
+		fp := strings.TrimPrefix(c.Param("filepath"), "/")
+		c.FileFromFS(path.Join("dist", "assets", fp), fs)
 	})
 
 	api.GET("/static/*filepath", func(c *gin.Context) {
-		c.FileFromFS(path.Join("dist", c.Request.URL.Path), fs)
+		fp := strings.TrimPrefix(c.Param("filepath"), "/")
+		c.FileFromFS(path.Join("dist", "static", fp), fs)
 	})
 }
